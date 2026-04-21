@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+         version="5.0">
+
+    <servlet>
+        <servlet-name>CheckIn</servlet-name>
+        <servlet-class>com.example.hotelmanagementsystem.servlet.CheckInServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CheckIn</servlet-name>
+        <url-pattern>/checkin</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>CheckInForm</servlet-name>
+        <servlet-class>com.example.hotelmanagementsystem.servlet.CheckInFormServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CheckInForm</servlet-name>
+        <url-pattern>/checkinForm</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>CheckOut</servlet-name>
+        <servlet-class>com.example.hotelmanagementsystem.servlet.CheckOutServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CheckOut</servlet-name>
+        <url-pattern>/checkout</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>AllRoomStatus</servlet-name>
+        <servlet-class>com.example.hotelmanagementsystem.servlet.AllRoomStatusServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AllRoomStatus</servlet-name>
+        <url-pattern>/allRoomStatus</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>RoomStatus</servlet-name>
+        <servlet-class>com.example.hotelmanagementsystem.servlet.RoomStatusServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>RoomStatus</servlet-name>
+        <url-pattern>/rooms/status</url-pattern>
+    </servlet-mapping>
+
+</web-app>
