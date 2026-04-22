@@ -1,67 +1,105 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-    /* 【关键修正 1】：让主体文字默认居中 */
-    text-align: center;
-  }
+<%@ page import="com.example.hotelmanagementsystem.model.User" %>
+<%
+    // 获取用户信息，避免重复定义变量
+    User currentUser = null;
+    String role = "guest";
+    String username = "游客";
 
-  /* 头部条：内容居中 */
-  .header-bar {
-    background-color: #333;
-    color: white;
-    padding: 15px 30px;
-    display: flex;
-    /* 让标题在头部居中 */
-    justify-content: center;
-    align-items: center;
-  }
-  .header-bar h1 { margin: 0; font-size: 1.5em; }
-
-  /* 内容容器 */
-  .container {
-    width: 80%;
-    max-width: 900px; /* 增加最大宽度限制 */
-    margin: 30px auto; /* 保持容器本身在页面中央 */
-    padding: 20px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    /* 【关键修正 2】：覆盖 text-align: center; 以便内部元素保持居中，但不影响块级元素 */
-    text-align: center;
-  }
-
-  /* 菜单列表的样式 */
-  .main-menu-list {
-    list-style: none;
-    padding: 0;
-    /* 关键：让列表本身居中，而不是让列表项居中 */
-    display: inline-block;
-    text-align: left; /* 保持列表内的文字左对齐，但列表块本身居中 */
-  }
-
-  .main-menu-list li {
-    margin: 15px 0;
-    padding: 10px;
-    background-color: #f0f8ff;
-    border: 1px solid #cceeff;
-    border-radius: 5px;
-  }
-  .main-menu-list a {
-    text-decoration: none;
-    color: #007bff;
-    font-weight: bold;
-    display: block;
-    padding: 5px 0;
-  }
-  .main-menu-list a:hover {
-    text-decoration: underline;
-  }
-</style>
-<div class="header-bar">
-  <h1>酒店管理系统</h1>
+    if (session != null) {
+        currentUser = (User) session.getAttribute("user");
+        if (currentUser != null) {
+            role = currentUser.getRole();
+            username = currentUser.getUsername();
+        }
+    }
+%>
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .header {
+            background: linear-gradient(135deg, #22664e, #1a4f3c);
+            color: white;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .logo i {
+            font-size: 1.5rem;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-info span {
+            font-size: 0.85rem;
+        }
+        .role-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        @media (max-width: 600px) {
+            .header {
+                padding: 0.8rem 1rem;
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="logo">
+        <i class="fas fa-hotel"></i>
+        <span>酒店管理系统</span>
+    </div>
+    <div class="user-info">
+        <i class="fas fa-user-circle"></i>
+        <span><%= username %></span>
+        <span class="role-badge">
+            <% if ("manager".equals(role)) { %>
+                前台经理
+            <% } else if ("staff".equals(role)) { %>
+                前台
+            <% } else { %>
+                顾客
+            <% } %>
+        </span>
+        <a href="${pageContext.request.contextPath}/logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> 退出
+        </a>
+    </div>
 </div>
-<div class="container">
+</body>
+</html>

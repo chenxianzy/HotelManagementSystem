@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>系统主菜单 | 酒店管理系统</title>
 
-    <!-- 现代字体系统: Inter 优先，优雅降级 -->
+    <!-- 现代字体系统 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome 6 图标库 (纯图标，无emoji) -->
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
@@ -73,12 +73,24 @@
             display: inline-block;
         }
 
-        /* 统计卡片 - 四个在一排 (响应式网格) */
+        /* 统计卡片容器 */
         .stats-row {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
             gap: 1.2rem;
             margin-bottom: 2.5rem;
+        }
+
+        /* 顾客视图：2个卡片，居中显示 */
+        .stats-row.customer-view {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 员工/经理视图：4个卡片 */
+        .stats-row.staff-view {
+            grid-template-columns: repeat(4, 1fr);
         }
 
         .stat-card {
@@ -106,7 +118,10 @@
             margin: 0 auto 0.8rem auto;
         }
 
-        /* 各卡片图标配色 */
+        .stat-icon i {
+            font-size: 1.4rem;
+        }
+
         .stat-card:nth-child(1) .stat-icon { background: #ecfdf5; }
         .stat-card:nth-child(1) .stat-icon i { color: #2c8b72; }
 
@@ -118,10 +133,6 @@
 
         .stat-card:nth-child(4) .stat-icon { background: #f0e6fa; }
         .stat-card:nth-child(4) .stat-icon i { color: #8b6ebf; }
-
-        .stat-icon i {
-            font-size: 1.4rem;
-        }
 
         .stat-number {
             font-size: 1.6rem;
@@ -151,6 +162,9 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
             border: 1px solid #eef2f8;
+            text-decoration: none;
+            display: block;
+            color: inherit;
         }
 
         .menu-card:hover {
@@ -172,7 +186,6 @@
             margin-bottom: 1rem;
         }
 
-        /* 各卡片主题色 */
         .card-checkin .card-icon { background: linear-gradient(135deg, #e0f2e9, #c8e6d9); }
         .card-checkin .card-icon i { color: #2c8b72; font-size: 1.5rem; }
 
@@ -233,7 +246,7 @@
             transform: translateX(3px);
         }
 
-        /* 响应式 - 小屏幕时统计卡片换行为两行 */
+        /* 响应式 */
         @media (max-width: 768px) {
             .dashboard-wrapper {
                 padding: 1rem;
@@ -241,9 +254,12 @@
             .welcome-section h1 {
                 font-size: 1.5rem;
             }
-            .stats-row {
+            .stats-row.customer-view {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 0.8rem;
+                max-width: 100%;
+            }
+            .stats-row.staff-view {
+                grid-template-columns: repeat(2, 1fr);
             }
             .stat-number {
                 font-size: 1.3rem;
@@ -270,7 +286,11 @@
         }
 
         @media (max-width: 480px) {
-            .stats-row {
+            .stats-row.customer-view {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.6rem;
+            }
+            .stats-row.staff-view {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 0.6rem;
             }
@@ -306,26 +326,26 @@
             animation-fill-mode: backwards;
         }
 
-        .stat-card:nth-child(1) { animation-delay: 0.05s; }
-        .stat-card:nth-child(2) { animation-delay: 0.1s; }
-        .stat-card:nth-child(3) { animation-delay: 0.15s; }
-        .stat-card:nth-child(4) { animation-delay: 0.2s; }
-
         .menu-card {
             animation: fadeUp 0.4s ease-out;
             animation-fill-mode: backwards;
         }
-
-        .menu-card:nth-child(1) { animation-delay: 0.25s; }
-        .menu-card:nth-child(2) { animation-delay: 0.3s; }
-        .menu-card:nth-child(3) { animation-delay: 0.35s; }
-        .menu-card:nth-child(4) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
 
 <!-- 引入头部导航 -->
 <%@ include file="header.jsp" %>
+
+<%
+    // 从 session 获取用户角色
+    String userRole = (String) session.getAttribute("role");
+    if (userRole == null) {
+        userRole = "guest";
+    }
+    // 判断是否是前台或经理
+    boolean isStaffOrManager = "staff".equals(userRole) || "manager".equals(userRole);
+%>
 
 <div class="dashboard-wrapper">
     <div class="dashboard-container">
@@ -340,110 +360,96 @@
             </div>
         </div>
 
-        <!-- 统计卡片 - 四个在一排 (客房总数、空闲房间、今日入住、今日退房) -->
-        <div class="stats-row">
-            <!-- 客房总数 -->
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-building"></i>
+        <!-- 统计卡片 - 根据角色显示不同内容 -->
+        <% if (isStaffOrManager) { %>
+            <!-- 员工/经理视图：显示4个卡片 -->
+            <div class="stats-row staff-view">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-building"></i></div>
+                    <div class="stat-number">16</div>
+                    <div class="stat-label">客房总数</div>
                 </div>
-                <div class="stat-number">16</div>
-                <div class="stat-label">客房总数</div>
-            </div>
-
-            <!-- 空闲房间 -->
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-door-open"></i>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-door-open"></i></div>
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">空闲房间</div>
                 </div>
-                <div class="stat-number">10</div>
-                <div class="stat-label">空闲房间</div>
-            </div>
-
-            <!-- 今日入住 -->
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-user-check"></i>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">今日入住</div>
                 </div>
-                <div class="stat-number">3</div>
-                <div class="stat-label">今日入住</div>
-            </div>
-
-            <!-- 今日退房 -->
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-user-clock"></i>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-user-clock"></i></div>
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">今日退房</div>
                 </div>
-                <div class="stat-number">2</div>
-                <div class="stat-label">今日退房</div>
             </div>
-        </div>
+        <% } else { %>
+            <!-- 顾客视图：只显示2个卡片（客房总数、空闲房间） -->
+            <div class="stats-row customer-view">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-building"></i></div>
+                    <div class="stat-number">16</div>
+                    <div class="stat-label">客房总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-door-open"></i></div>
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">空闲房间</div>
+                </div>
+            </div>
+        <% } %>
 
-        <!-- 功能菜单网格 -->
+        <!-- 功能菜单网格 - 所有角色都能看到办理入住和办理退房 -->
         <div class="menu-grid">
-            <!-- 办理入住 -->
-            <div class="menu-card card-checkin">
+            <!-- 办理入住 - 所有角色可见 -->
+            <a href="${pageContext.request.contextPath}/checkinForm" class="menu-card card-checkin">
                 <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-key"></i>
-                    </div>
+                    <div class="card-icon"><i class="fas fa-key"></i></div>
                     <h3>办理入住</h3>
                     <p>为客人办理入住手续，并登记订单记录</p>
                 </div>
                 <div class="card-footer">
-                    <a href="checkinForm" class="menu-link">
-                        前往办理入住 <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <div class="menu-link">前往办理入住 <i class="fas fa-arrow-right"></i></div>
                 </div>
-            </div>
+            </a>
 
-            <!-- 房间状态查询 -->
-            <div class="menu-card card-query">
+            <!-- 房间状态查询 - 所有角色可见 -->
+            <a href="${pageContext.request.contextPath}/allRoomStatus" class="menu-card card-query">
                 <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
+                    <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
                     <h3>房间状态查询</h3>
-                    <p>查看酒店内所有房间的详细状态（空闲/已入住/清洁中）</p>
+                    <p>查看酒店内所有房间的详细状态</p>
                 </div>
                 <div class="card-footer">
-                    <a href="allRoomStatus" class="menu-link">
-                        查询所有房间状态 <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <div class="menu-link">查看状态 <i class="fas fa-arrow-right"></i></div>
                 </div>
-            </div>
+            </a>
 
-            <!-- 空闲房间查询 -->
-            <div class="menu-card card-available">
+            <!-- 空闲房间查询 - 所有角色可见 -->
+            <a href="${pageContext.request.contextPath}/rooms/status" class="menu-card card-available">
                 <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
+                    <div class="card-icon"><i class="fas fa-check-circle"></i></div>
                     <h3>空闲房间查询</h3>
-                    <p>快速查询当前所有可供客人入住的空闲房间</p>
+                    <p>快速查询当前所有可供入住的空闲房间</p>
                 </div>
                 <div class="card-footer">
-                    <a href="rooms/status" class="menu-link">
-                        查询空闲房间 <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <div class="menu-link">查询空闲 <i class="fas fa-arrow-right"></i></div>
                 </div>
-            </div>
+            </a>
 
-            <!-- 办理退房 -->
-            <div class="menu-card card-checkout">
+            <!-- 办理退房 - 所有角色可见 -->
+            <a href="${pageContext.request.contextPath}/checkout" class="menu-card card-checkout">
                 <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </div>
+                    <div class="card-icon"><i class="fas fa-sign-out-alt"></i></div>
                     <h3>办理退房</h3>
                     <p>为客人结算费用并办理退房手续</p>
                 </div>
                 <div class="card-footer">
-                    <a href="checkout" class="menu-link">
-                        办理退房 <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <div class="menu-link">办理退房 <i class="fas fa-arrow-right"></i></div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 </div>
