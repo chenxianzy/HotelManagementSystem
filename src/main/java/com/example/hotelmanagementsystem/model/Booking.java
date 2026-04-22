@@ -1,98 +1,78 @@
 package com.example.hotelmanagementsystem.model;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp; // 建议使用 Timestamp 存储日期和时间
+import java.sql.Timestamp;
+import java.time.LocalDate;
 
 /**
- * Booking 实体类，对应数据库中的 Booking 表，用于存储订单/入住记录。
+ * Booking 实体类，对应数据库中的 Booking 表
  */
 public class Booking {
     private int bookingId;
-    private int guestId; // 外键：客人ID
-    private int roomId; // 外键：房间ID
-    private Timestamp checkInTime; // 入住时间（包含日期和时间）
-    private Timestamp checkOutTime; // 预计/实际退房时间
-    private BigDecimal totalCost; // 总费用
-    private String bookingStatus; // 订单状态 (如: CheckedIn, CheckedOut, Cancelled)
-    private Integer employeeIdCheckIn; // 办理入住的员工ID (可为空)
-    private Integer employeeIdCheckOut; // 办理退房的员工ID (可为空)
+    private int guestId;
+    private int roomId;
+    private LocalDate checkInDate;      // 入住日期 (DATE)
+    private LocalDate checkOutDate;     // 离店日期 (DATE)
+    private Timestamp actualCheckIn;    // 实际入住时间 (TIMESTAMP)
+    private Timestamp actualCheckOut;   // 实际离店时间 (TIMESTAMP)
+    private int totalNights;            // 入住晚数
+    private BigDecimal totalCost;       // 总费用
+    private String bookingStatus;       // 订单状态
+    private String paymentStatus;       // 支付状态
+    private String specialRequests;     // 特殊要求
+    private Integer employeeIdCheckIn;  // 办理入住员工ID
+    private Integer employeeIdCheckOut; // 办理离店员工ID
+    private Timestamp createTime;       // 创建时间
+    private Timestamp updateTime;       // 更新时间
 
-    // ------------------------------------
-    // 构造方法
-    // ------------------------------------
     public Booking() {}
 
-    // --- Getters and Setters ---
+    // Getters and Setters
+    public int getBookingId() { return bookingId; }
+    public void setBookingId(int bookingId) { this.bookingId = bookingId; }
 
-    public int getBookingId() {
-        return bookingId;
-    }
+    public int getGuestId() { return guestId; }
+    public void setGuestId(int guestId) { this.guestId = guestId; }
 
-    public void setBookingId(int bookingId) {
-        this.bookingId = bookingId;
-    }
+    public int getRoomId() { return roomId; }
+    public void setRoomId(int roomId) { this.roomId = roomId; }
 
-    public int getGuestId() {
-        return guestId;
-    }
+    public LocalDate getCheckInDate() { return checkInDate; }
+    public void setCheckInDate(LocalDate checkInDate) { this.checkInDate = checkInDate; }
 
-    public void setGuestId(int guestId) {
-        this.guestId = guestId;
-    }
+    public LocalDate getCheckOutDate() { return checkOutDate; }
+    public void setCheckOutDate(LocalDate checkOutDate) { this.checkOutDate = checkOutDate; }
 
-    public int getRoomId() {
-        return roomId;
-    }
+    public Timestamp getActualCheckIn() { return actualCheckIn; }
+    public void setActualCheckIn(Timestamp actualCheckIn) { this.actualCheckIn = actualCheckIn; }
 
-    public void setRoomId(int roomId) {
-        this.roomId = roomId;
-    }
+    public Timestamp getActualCheckOut() { return actualCheckOut; }
+    public void setActualCheckOut(Timestamp actualCheckOut) { this.actualCheckOut = actualCheckOut; }
 
-    public Timestamp getCheckInTime() {
-        return checkInTime;
-    }
+    public int getTotalNights() { return totalNights; }
+    public void setTotalNights(int totalNights) { this.totalNights = totalNights; }
 
-    public void setCheckInTime(Timestamp checkInTime) {
-        this.checkInTime = checkInTime;
-    }
+    public BigDecimal getTotalCost() { return totalCost; }
+    public void setTotalCost(BigDecimal totalCost) { this.totalCost = totalCost; }
 
-    public Timestamp getCheckOutTime() {
-        return checkOutTime;
-    }
+    public String getBookingStatus() { return bookingStatus; }
+    public void setBookingStatus(String bookingStatus) { this.bookingStatus = bookingStatus; }
 
-    public void setCheckOutTime(Timestamp checkOutTime) {
-        this.checkOutTime = checkOutTime;
-    }
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
 
-    public BigDecimal getTotalCost() {
-        return totalCost;
-    }
+    public String getSpecialRequests() { return specialRequests; }
+    public void setSpecialRequests(String specialRequests) { this.specialRequests = specialRequests; }
 
-    public void setTotalCost(BigDecimal totalCost) {
-        this.totalCost = totalCost;
-    }
+    public Integer getEmployeeIdCheckIn() { return employeeIdCheckIn; }
+    public void setEmployeeIdCheckIn(Integer employeeIdCheckIn) { this.employeeIdCheckIn = employeeIdCheckIn; }
 
-    public String getBookingStatus() {
-        return bookingStatus;
-    }
+    public Integer getEmployeeIdCheckOut() { return employeeIdCheckOut; }
+    public void setEmployeeIdCheckOut(Integer employeeIdCheckOut) { this.employeeIdCheckOut = employeeIdCheckOut; }
 
-    public void setBookingStatus(String bookingStatus) {
-        this.bookingStatus = bookingStatus;
-    }
+    public Timestamp getCreateTime() { return createTime; }
+    public void setCreateTime(Timestamp createTime) { this.createTime = createTime; }
 
-    public Integer getEmployeeIdCheckIn() {
-        return employeeIdCheckIn;
-    }
-
-    public void setEmployeeIdCheckIn(Integer employeeIdCheckIn) {
-        this.employeeIdCheckIn = employeeIdCheckIn;
-    }
-
-    public Integer getEmployeeIdCheckOut() {
-        return employeeIdCheckOut;
-    }
-
-    public void setEmployeeIdCheckOut(Integer employeeIdCheckOut) {
-        this.employeeIdCheckOut = employeeIdCheckOut;
-    }
+    public Timestamp getUpdateTime() { return updateTime; }
+    public void setUpdateTime(Timestamp updateTime) { this.updateTime = updateTime; }
 }

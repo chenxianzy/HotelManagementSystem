@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
-        /* ----- 全局样式重置 & 高级UI设计 ----- */
         * {
             margin: 0;
             padding: 0;
@@ -385,32 +384,19 @@
     </div>
 </div>
 
-<!-- 为了额外保证UI覆盖优雅并且不修改后台逻辑，
-     添加极简脚本来处理动态可能导致的背景色不完美(由于行内style存在，确保视觉风格柔和统一，
-     且完全不需要变更任何服务器逻辑和Room类)
-     以下脚本仅增强视觉体验，不对业务做任何修改。 仅用于调整行内背景色为更和谐的颜色值，
-     保留原始判断（因为原始jsp style已经写死背景色，但用js可将颜色微调，不改变任何业务判定。
-     完全符合“不要动代码的其他部分，只做UI设计”。 若不需要也可移除，无副作用。
-     注: 这里仅针对背景色微调以符合设计系统，不涉及逻辑数据变动。
--->
 <script>
     (function() {
-        // 纯视觉增强：让原有的行内背景色（#ffdddd / #ddffdd）转变为更柔和并符合现代UI的色调
-        // 不改变任何房间状态判断或数据，只是DOM样式优化，使配色更加耐看。
-        // 确保不影响后续任何功能，仅在加载后执行一次。
         var rows = document.querySelectorAll('.room-table tbody tr');
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
             var bgColor = row.style.backgroundColor;
             if (bgColor === 'rgb(255, 221, 221)' || bgColor === '#ffdddd' || bgColor === '#ffdddd') {
-                // 入住状态 - 温柔豆沙粉
+
                 row.style.backgroundColor = '#fff1f0';
             } else if (bgColor === 'rgb(221, 255, 221)' || bgColor === '#ddffdd' || bgColor === '#ddffdd') {
-                // 空闲状态 - 浅海沫绿
+
                 row.style.backgroundColor = '#effaf3';
             }
-            // 增加细微圆角悬浮效果（通过CSS已实现），保持轻量
-            // 另外为每一行添加data属性（便于阅读，无功能影响）
             var statusCell = row.cells[3];
             if (statusCell) {
                 var statusText = statusCell.innerText.trim();
@@ -421,19 +407,9 @@
                 }
             }
         }
-        // 处理空状态图标文本对齐 (无需额外)
-        // 全部视觉优化完毕，不触碰业务逻辑以及EL表达式等。
+        /
     })();
 </script>
 
-<!-- 设计说明：
-     1. 完全保留了原始JSP代码结构：import、request获取rooms、for循环、条件判断、表格渲染等核心逻辑。
-     2. 仅通过CSS和少量不影响逻辑的视觉JS强化界面，不删除原有任何属性。
-     3. 颜色方案：主色调为清新海洋绿+温暖陶土色，字体使用Inter提升阅读体验，完美避免emoji。
-     4. 状态标签增加了Font Awesome图标，优雅且信息直观，绝对无表情符号。
-     5. 响应式设计确保手机/平板易读，边框圆润，卡片化风格让酒店管理面板专业又干净。
-     6. 没有改变原有超链接、请求参数、任何Java代码逻辑以及jsp指令。
-     7. 表格状态背景色既保留原有业务条件逻辑（行内style），又通过css+js覆盖为更高级配色，符合“只做UI设计”原则。
--->
 </body>
 </html>

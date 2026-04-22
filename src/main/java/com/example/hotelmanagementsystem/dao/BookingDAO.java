@@ -10,32 +10,26 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BookingDAO {
 
-    private final RoomDAO roomDAO = new RoomDAO(); // 依赖 RoomDAO
+    private final RoomDAO roomDAO = new RoomDAO();
 
     // 入住功能
     public boolean performCheckInTransaction(int roomID, Guest guest, LocalDate checkInDate) throws SQLException {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // 开启事务
+            conn.setAutoCommit(false);
 
-            // 1. 处理客人信息 (智能判断：是新客还是老客？)
+            // 1. 处理客人信息
             int guestID = findGuestIdByIdNumber(conn, guest.getIdNumber());
 
             if (guestID != -1) {
-                // --- 老客人 ---
-                // (可选) 这里可以添加 UPDATE 语句来更新老客人的电话或姓名
                 System.out.println("Found existing guest ID: " + guestID);
             } else {
-                // --- 新客人 ---
                 guestID = insertGuest(conn, guest);
                 if (guestID == -1) {
                     conn.rollback();
@@ -57,14 +51,12 @@ public class BookingDAO {
                 return false;
             }
 
-            conn.commit(); // 提交事务
+            conn.commit();
             return true;
 
         } catch (SQLException e) {
             System.err.println("Check-In Transaction failed, rolling back.");
-            if (conn != null) {
-                conn.rollback();
-            }
+            if (conn != null) conn.rollback();
             throw e;
         } finally {
             if (conn != null) {
@@ -74,35 +66,54 @@ public class BookingDAO {
         }
     }
 
-    // 【新增辅助方法】：根据身份证号查找客人ID
+    // 根据身份证号查找客人ID
     private int findGuestIdByIdNumber(Connection conn, String idNumber) throws SQLException {
         String sql = "SELECT GuestID FROM Guests WHERE IDNumber = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, idNumber);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("GuestID"); // 找到了，返回 ID
+                    return rs.getInt("GuestID");
                 }
             }
         }
-        return -1; // 没找到
+        return -1;
     }
 
-    // 辅助方法 1A: 插入 Guest 并返回 ID
+    // 插入 Guest 并返回 ID
     private int insertGuest(Connection conn, Guest guest) throws SQLException {
-        String sql = "INSERT INTO Guests (FullName, PhoneNumber, IDNumber, Email) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Guests (FirstName, LastName, PhoneNumber, IDNumber, Email, Gender, Nationality) VALUES (?, ?, ?, ?, ?, ?, ?)";
         int generatedId = -1;
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, guest.getName());
-            pstmt.setString(2, guest.getPhone());
-            pstmt.setString(3, guest.getIdNumber());
+            String fullName = guest.getName();
+            String firstName = fullName;
+            String lastName = "";
+
+            if (fullName != null && !fullName.trim().isEmpty()) {
+                int lastSpace = fullName.lastIndexOf(" ");
+                if (lastSpace > 0) {
+                    firstName = fullName.substring(0, lastSpace);
+                    lastName = fullName.substring(lastSpace + 1);
+                } else {
+                    firstName = fullName;
+                    lastName = "";
+                }
+            }
+
+            pstmt.setString(1, firstName);
+            pstmt.setString(2, lastName);
+            pstmt.setString(3, guest.getPhone());
+            pstmt.setString(4, guest.getIdNumber());
 
             if (guest.getEmail() != null && !guest.getEmail().trim().isEmpty()) {
-                pstmt.setString(4, guest.getEmail());
+                pstmt.setString(5, guest.getEmail());
             } else {
-                pstmt.setNull(4, Types.VARCHAR);
+                pstmt.setNull(5, Types.VARCHAR);
             }
+
+            pstmt.setString(6, "未知");
+            pstmt.setString(7, "中国");
 
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows == 0) return -1;
@@ -116,15 +127,41 @@ public class BookingDAO {
         return generatedId;
     }
 
-    // 辅助方法 2A: 插入 Booking
+    // 插入 Booking (适配数据库：使用 CheckInDate, CheckOutDate, TotalNights)
     private boolean insertBooking(Connection conn, int guestID, int roomID, LocalDate checkInDate) throws SQLException {
-        String sql = "INSERT INTO Bookings (GuestID, RoomID, CheckInTime, BookingStatus) VALUES (?, ?, ?, 'CheckedIn')";
+        // 计算临时离店日期（入住日期的第二天）
+        LocalDate tempCheckOutDate = checkInDate.plusDays(1);
+        int totalNights = 1;
+
+        // 获取房间价格
+        BigDecimal roomPrice = getRoomPrice(conn, roomID);
+        BigDecimal totalCost = roomPrice.multiply(new BigDecimal(totalNights));
+
+        String sql = "INSERT INTO Bookings (GuestID, RoomID, CheckInDate, CheckOutDate, TotalNights, TotalCost, BookingStatus, PaymentStatus, ActualCheckIn) VALUES (?, ?, ?, ?, ?, ?, 'CheckedIn', 'Pending', ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, guestID);
             pstmt.setInt(2, roomID);
             pstmt.setDate(3, java.sql.Date.valueOf(checkInDate));
+            pstmt.setDate(4, java.sql.Date.valueOf(tempCheckOutDate));
+            pstmt.setInt(5, totalNights);
+            pstmt.setBigDecimal(6, totalCost);
+            pstmt.setTimestamp(7, Timestamp.valueOf(checkInDate.atStartOfDay()));
             return pstmt.executeUpdate() > 0;
         }
+    }
+
+    // 获取房间价格
+    private BigDecimal getRoomPrice(Connection conn, int roomID) throws SQLException {
+        String sql = "SELECT RT.Price FROM Rooms R JOIN RoomTypes RT ON R.RoomTypeID = RT.RoomTypeID WHERE R.RoomID = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, roomID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal("Price");
+                }
+            }
+        }
+        return BigDecimal.ZERO;
     }
 
     // =================================================================================
@@ -147,16 +184,15 @@ public class BookingDAO {
                 roomPrice = BigDecimal.ZERO;
             }
 
-            Timestamp checkInTimestamp = currentBooking.getCheckInTime();
-            long days = 1;
-            if (checkInTimestamp != null) {
-                long diff = Instant.now().toEpochMilli() - checkInTimestamp.getTime();
-                days = diff / (1000 * 60 * 60 * 24);
-                if (days < 1) days = 1;
-            }
+            // 计算入住天数
+            LocalDate checkInDate = currentBooking.getCheckInDate();
+            LocalDate checkOutDate = LocalDate.now();
+            long days = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
+            if (days < 1) days = 1;
+
             BigDecimal totalCost = roomPrice.multiply(new BigDecimal(days));
 
-            updateBookingForCheckOut(conn, currentBooking.getBookingId(), totalCost);
+            updateBookingForCheckOut(conn, currentBooking.getBookingId(), totalCost, checkOutDate, (int) days);
 
             roomDAO.updateRoomStatus(conn, roomID, "Cleaning");
 
@@ -175,7 +211,7 @@ public class BookingDAO {
     }
 
     private Booking findActiveBookingByRoomID(Connection conn, int roomID) throws SQLException {
-        String sql = "SELECT * FROM Bookings WHERE RoomID = ? AND BookingStatus = 'CheckedIn'";
+        String sql = "SELECT BookingID, GuestID, RoomID, CheckInDate, CheckOutDate, TotalCost FROM Bookings WHERE RoomID = ? AND BookingStatus = 'CheckedIn'";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, roomID);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -184,7 +220,9 @@ public class BookingDAO {
                     booking.setBookingId(rs.getInt("BookingID"));
                     booking.setRoomId(rs.getInt("RoomID"));
                     booking.setGuestId(rs.getInt("GuestID"));
-                    booking.setCheckInTime(rs.getTimestamp("CheckInTime"));
+                    booking.setCheckInDate(rs.getDate("CheckInDate").toLocalDate());
+                    booking.setCheckOutDate(rs.getDate("CheckOutDate").toLocalDate());
+                    booking.setTotalCost(rs.getBigDecimal("TotalCost"));
                     return booking;
                 }
             }
@@ -192,27 +230,15 @@ public class BookingDAO {
         return null;
     }
 
-    private BigDecimal getRoomPrice(Connection conn, int roomID) throws SQLException {
-        String sql = "SELECT RT.Price FROM Rooms R JOIN RoomTypes RT ON R.RoomTypeID = RT.RoomTypeID WHERE R.RoomID = ?";
+    private boolean updateBookingForCheckOut(Connection conn, int bookingID, BigDecimal totalCost, LocalDate checkOutDate, int totalNights) throws SQLException {
+        String sql = "UPDATE Bookings SET CheckOutDate = ?, TotalCost = ?, TotalNights = ?, BookingStatus = 'CheckedOut', ActualCheckOut = ? WHERE BookingID = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, roomID);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getBigDecimal("Price");
-                }
-            }
-        }
-        return BigDecimal.ZERO;
-    }
-
-    private boolean updateBookingForCheckOut(Connection conn, int bookingID, BigDecimal totalCost) throws SQLException {
-        String sql = "UPDATE Bookings SET CheckOutTime = ?, TotalCost = ?, BookingStatus = 'CheckedOut' WHERE BookingID = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setTimestamp(1, Timestamp.from(Instant.now()));
+            pstmt.setDate(1, java.sql.Date.valueOf(checkOutDate));
             pstmt.setBigDecimal(2, totalCost);
-            pstmt.setInt(3, bookingID);
+            pstmt.setInt(3, totalNights);
+            pstmt.setTimestamp(4, Timestamp.valueOf(checkOutDate.atStartOfDay()));
+            pstmt.setInt(5, bookingID);
             return pstmt.executeUpdate() > 0;
         }
     }
 }
-

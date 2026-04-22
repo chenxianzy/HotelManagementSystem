@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>办理入住 | 酒店管理系统</title>
+    <title>办理入住 </title>
 
     <!-- 现代字体系统: Inter 优先，优雅降级 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
 
     <style>
-        /* ---------- 全局样式重置 ---------- */
+
         * {
             margin: 0;
             padding: 0;
