@@ -47,7 +47,6 @@ public class IndexServlet extends HttpServlet {
             request.setAttribute("todayCheckOuts", 0);
         }
 
-        // 转发到 index.jsp（注意：这里是转发，不是重定向）
         request.getRequestDispatcher("/index.jsp").forward(request, response);
     }
 }

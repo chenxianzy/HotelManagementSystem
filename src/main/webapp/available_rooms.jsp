@@ -1,458 +1,310 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.example.hotelmanagementsystem.model.Room" %>
 <%@ page import="java.util.List" %>
+<%@ page import="com.example.hotelmanagementsystem.model.Room" %>
+<%@ page import="com.example.hotelmanagementsystem.model.User" %>
+<%
+    User currentUser = (User) session.getAttribute("user");
+    String userRole = currentUser != null ? currentUser.getRole() : "guest";
+    boolean isStaffOrManager = "staff".equals(userRole) || "manager".equals(userRole);
+%>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>空闲客房 | 酒店管理系统</title>
+    <title>房间状态管理 | 酒店管理系统</title>
 
-    <!-- 现代字体: Inter 优先，优雅降级 -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <!-- Font Awesome 6 图标库 (纯图形，无emoji) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
-        /* ---------- 全局样式 · 宁静专业 ---------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(145deg, #f4f9fe 0%, #ecf3f8 100%);
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #f1f6fb 0%, #e8f0f5 100%);
             color: #1e2f3c;
             line-height: 1.5;
-            padding: 2rem 1.5rem;
             min-height: 100vh;
-        }
-
-        /* 主容器 - 优雅卡片 */
-        .card-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 36px;
-            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.12), 0 2px 10px rgba(0, 0, 0, 0.02);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        /* 头部区域 */
-        .hero-section {
-            background: linear-gradient(120deg, #ffffff 0%, #fefefe 100%);
-            padding: 2rem 2rem 0.5rem 2rem;
-            border-bottom: 1px solid #eef2f7;
-        }
-
-        .title-wrapper {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
+            flex-direction: column;
         }
-
-        .title-wrapper h1 {
-            font-size: 2rem;
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; flex: 1; }
+        .page-header { margin-bottom: 1.8rem; text-align: center; }
+        .page-header h2 {
+            font-size: 1.9rem;
             font-weight: 700;
-            letter-spacing: -0.01em;
             background: linear-gradient(145deg, #22664e, #2c8b72);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
             display: inline-flex;
             align-items: center;
-            gap: 14px;
-        }
-
-        .title-wrapper h1 i {
-            background: none;
-            color: #2c8b72;
-            font-size: 1.9rem;
-        }
-
-        .air-badge {
-            background: #e6f9f0;
-            padding: 0.45rem 1.2rem;
-            border-radius: 60px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #1f6e58;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .air-badge i {
-            font-size: 0.85rem;
-        }
-
-        .subhead {
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
-            color: #57758c;
-            font-size: 0.95rem;
-            border-left: 3px solid #3dab8f;
-            padding-left: 15px;
-            font-weight: 400;
-        }
-
-        /* 内容区域 */
-        .content-pane {
-            padding: 1.8rem 2rem 2rem 2rem;
-        }
-
-        /* 统计摘要卡片 */
-        .summary-card {
-            background: #f6fbf9;
-            border-radius: 24px;
-            padding: 1rem 1.8rem;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-            border: 1px solid #e0ede8;
-        }
-
-        .count-info {
-            display: flex;
-            align-items: baseline;
             gap: 12px;
-            flex-wrap: wrap;
         }
-
-        .count-number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #2a7a62;
-            line-height: 1;
+        .subtitle { color: #5f7e93; font-size: 0.9rem; margin-top: 8px; }
+        .table-wrapper {
+            background: white;
+            border-radius: 28px;
+            overflow-x: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid #eef2f7;
         }
-
-        .count-label {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #436d5c;
-        }
-
-        .status-tag {
-            background: #e2f3ed;
-            padding: 0.3rem 1rem;
-            border-radius: 32px;
-            font-size: 0.8rem;
-            color: #1c6a53;
-            font-weight: 500;
-        }
-
-        /* 现代表格设计 */
-        .elegant-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-        }
-
-        .elegant-table thead tr {
-            background: #f9fdfb;
-        }
-
-        .elegant-table th {
+        .room-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .room-table th {
             text-align: left;
             padding: 1rem 1.2rem;
+            background: #f8fafd;
             font-weight: 600;
             font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: #376952;
-            background-color: #fafefc;
-            border-bottom: 1px solid #e2ede7;
+            color: #3a5a6e;
+            border-bottom: 1px solid #e6edf4;
         }
+        .room-table td { padding: 1rem 1.2rem; border-bottom: 1px solid #eff3f8; vertical-align: middle; }
+        .room-table tbody tr:hover { background-color: #fefce8; }
 
-        .elegant-table td {
-            padding: 1rem 1.2rem;
-            border-bottom: 1px solid #eef5f1;
-            vertical-align: middle;
-            transition: background 0.2s;
-        }
-
-        .elegant-table tbody tr:hover td {
-            background-color: #fefce8;
-        }
-
-        /* 房间号高亮 */
-        .room-number {
-            font-weight: 700;
-            color: #1c5d74;
+        .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .room-number i {
-            font-size: 0.85rem;
-            color: #4f9b82;
-        }
-
-        /* 价格样式 */
-        .price-value {
-            font-weight: 700;
-            color: #2b7a5e;
-            letter-spacing: 0.01em;
-        }
-
-        /* 状态徽章 (可用) */
-        .status-badge-available {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #e0f2e9;
-            color: #1f6e50;
             padding: 0.3rem 1rem;
             border-radius: 40px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
         }
+        .status-available { background: #e0f2e9; color: #2a785e; }
+        .status-occupied { background: #ffe6e1; color: #b34e3a; }
+        .status-reserved { background: #fff0c8; color: #b87c2e; }
+        .status-cleaning { background: #e2edf9; color: #3f6b8c; }
+        .status-maintenance { background: #eceef2; color: #6f7a86; }
 
-        /* 错误/空状态卡片 */
-        .message-card {
-            background: #ffffff;
-            border-radius: 24px;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-            border: 1px solid #edf2f0;
+        .status-select {
+            padding: 0.5rem 0.8rem;
+            border: 1.5px solid #e2eaf0;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
         }
-
-        .error-message {
-            color: #cd7a5c;
-            background: #fff7f5;
-            border-left: 4px solid #e28c6e;
-            padding: 1rem 1.5rem;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 500;
+        .update-btn {
+            background: #2c8b72;
+            color: white;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
         }
-
-        .empty-message {
-            color: #6b8da3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .empty-message i {
-            font-size: 2.8rem;
-            color: #bdd8e6;
-        }
-
-        /* 底部返回链接 */
-        .footer-nav {
-            padding: 1rem 2rem 2rem 2rem;
-            border-top: 1px solid #eaf0f5;
-            text-align: center;
-            background: #ffffff;
-        }
-
-        .back-home {
+        .update-btn:hover { background: #22664e; transform: translateY(-1px); }
+        .back-link {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: #f0f5f9;
-            padding: 0.7rem 2rem;
+            padding: 0.65rem 1.8rem;
             border-radius: 60px;
             text-decoration: none;
             font-weight: 500;
             font-size: 0.9rem;
             color: #2f6e5a;
-            transition: all 0.25s;
-            border: 1px solid #dee9ef;
+            margin-top: 1.5rem;
         }
-
-        .back-home i {
-            transition: transform 0.2s;
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2c8b72;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            display: none;
+            z-index: 1000;
         }
-
-        .back-home:hover {
-            background: #e6edf4;
-            color: #1c5a48;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px -8px rgba(0, 0, 0, 0.1);
-        }
-
-        .back-home:hover i {
-            transform: translateX(-4px);
-        }
-
-        /* 响应式 */
-        @media (max-width: 680px) {
-            body {
-                padding: 1rem;
-            }
-            .hero-section {
-                padding: 1.2rem 1.2rem 0.2rem 1.2rem;
-            }
-            .title-wrapper h1 {
-                font-size: 1.55rem;
-            }
-            .content-pane {
-                padding: 1rem 1rem 1.2rem 1rem;
-            }
-            .summary-card {
-                padding: 0.8rem 1.2rem;
-            }
-            .count-number {
-                font-size: 1.6rem;
-            }
-            .elegant-table th,
-            .elegant-table td {
-                padding: 0.7rem 0.8rem;
-                font-size: 0.85rem;
-            }
-            .status-badge-available {
-                padding: 0.2rem 0.7rem;
-                font-size: 0.75rem;
-            }
-            .footer-nav {
-                padding: 1rem 1rem 1.5rem;
-            }
-        }
-
-        /* 动画 */
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .card-container {
-            animation: fadeUp 0.4s ease-out;
-        }
-
-        /* 表头图标辅助 */
-        .elegant-table th i {
-            margin-right: 8px;
-            font-size: 0.8rem;
-            color: #578f7a;
+        .toast-msg.error { background: #c96a52; }
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
 <body>
+<%@ include file="header.jsp" %>
 
-<div class="card-container">
-    <div class="hero-section">
-        <div class="title-wrapper">
-            <h1>
-                <i class="fas fa-bed"></i>
-                空闲客房
-            </h1>
-            <div class="air-badge">
-                <i class="fas fa-calendar-alt"></i>
-                可供即时预订
-            </div>
-        </div>
-        <div class="subhead">
-            仅显示状态为「Available」的房间 · 清新舒适，即刻入住
-        </div>
+<div class="container">
+    <div class="page-header">
+        <h2><i class="fas fa-door-open"></i> 房间状态管理</h2>
+        <div class="subtitle">实时查看房间状态 · 支持手动修改房间状态</div>
     </div>
 
-    <div class="content-pane">
+    <div class="table-wrapper">
         <%
-            // 完全保留原有业务逻辑：获取错误信息或房间列表
-            String errorMessage = (String) request.getAttribute("errorMessage");
-            if (errorMessage != null) {
-        %>
-        <div class="message-card">
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle" style="font-size: 1.2rem;"></i>
-                <span><%= errorMessage %></span>
-            </div>
-        </div>
-        <%
-        } else {
             List<Room> rooms = (List<Room>) request.getAttribute("rooms");
-            if (rooms != null && !rooms.isEmpty()) {
+            String error = (String) request.getAttribute("error");
         %>
-        <!-- 统计摘要 -->
-        <div class="summary-card">
-            <div class="count-info">
-                <span class="count-number"><%= rooms.size() %></span>
-                <span class="count-label">间空闲客房</span>
-                <span class="status-tag"><i class="fas fa-check-circle"></i> 可立即办理入住</span>
+        <% if (error != null) { %>
+            <div style="padding: 2rem; text-align: center; color: #bc5a42;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
+                <p>错误: <%= error %></p>
             </div>
-            <div>
-                <i class="fas fa-building" style="color: #86b3a2; font-size: 1.2rem;"></i>
-                <span style="font-size: 0.8rem; color: #5e8876;"> 今日好房推荐</span>
-            </div>
-        </div>
+        <% } else if (rooms != null && !rooms.isEmpty()) { %>
+            <table class="room-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> 房间号</th>
+                        <th><i class="fas fa-bed"></i> 房型</th>
+                        <th><i class="fas fa-tag"></i> 价格</th>
+                        <th><i class="fas fa-info-circle"></i> 当前状态</th>
+                        <% if (isStaffOrManager) { %>
+                            <th><i class="fas fa-cog"></i> 修改状态</th>
+                        <% } %>
+                    </tr>
+                </thead>
+                <tbody>
+                <%
+                    for (Room room : rooms) {
+                        String status = room.getStatus();
+                        String badgeClass;
+                        String displayStatus;
 
-        <table class="elegant-table">
-            <thead>
-                <tr>
-                    <th><i class="fas fa-door-open"></i> 房间号</th>
-                    <th><i class="fas fa-couch"></i> 房间类型</th>
-                    <th><i class="fas fa-tag"></i> 价格 (RMB/晚)</th>
-                    <th><i class="fas fa-info-circle"></i> 状态</th>
-                </tr>
-            </thead>
-            <tbody>
-            <% for (Room room : rooms) { %>
-                <tr>
-                    <td>
-                        <span class="room-number">
-                            <i class="fas fa-hashtag"></i>
-                            <%= room.getRoomNumber() %>
-                        </span>
-                    </td>
-                    <td><%= room.getTypeName() %></td>
-                    <td><span class="price-value">¥ <%= String.format("%.2f", room.getPrice()) %></span></td>
-                    <td>
-                        <span class="status-badge-available">
-                            <i class="fas fa-check-circle"></i>
-                            <%= "Available".equals(room.getStatus()) ? "空闲" : room.getStatus() %>
-                        </span>
-                    </td>
-                </tr>
-            <% } %>
-            </tbody>
-        </table>
-        <%
-            } else {
-        %>
-        <div class="message-card">
-            <div class="empty-message">
-                <i class="fas fa-bed-empty"></i>
-                <span>抱歉，当前没有可供入住的空闲房间</span>
-                <small style="font-size: 0.85rem; color: #88a4b5;">请稍后再来查询或联系前台</small>
+                        if ("Available".equals(status)) {
+                            badgeClass = "status-available";
+                            displayStatus = "空闲";
+                        } else if ("Occupied".equals(status)) {
+                            badgeClass = "status-occupied";
+                            displayStatus = "已入住";
+                        } else if ("Reserved".equals(status)) {
+                            badgeClass = "status-reserved";
+                            displayStatus = "已预订";
+                        } else if ("Cleaning".equals(status)) {
+                            badgeClass = "status-cleaning";
+                            displayStatus = "清洁中";
+                        } else if ("Maintenance".equals(status)) {
+                            badgeClass = "status-maintenance";
+                            displayStatus = "维修中";
+                        } else {
+                            badgeClass = "status-maintenance";
+                            displayStatus = status;
+                        }
+                %>
+                    <tr data-room-id="<%= room.getRoomId() %>" data-room-number="<%= room.getRoomNumber() %>">
+                        <td><strong><%= room.getRoomNumber() %></strong></td>
+                        <td><%= room.getTypeName() %></td>
+                        <td>¥<%= String.format("%.2f", room.getPrice()) %></td>
+                        <td>
+                            <span class="status-badge <%= badgeClass %>">
+                                <i class="<%= "Available".equals(status) ? "fas fa-check-circle" :
+                                           "Occupied".equals(status) ? "fas fa-user" :
+                                           "Reserved".equals(status) ? "fas fa-calendar-check" :
+                                           "Cleaning".equals(status) ? "fas fa-broom" : "fas fa-tools" %>"></i>
+                                <%= displayStatus %>
+                            </span>
+                        </td>
+                        <% if (isStaffOrManager) { %>
+                            <td>
+                                <select class="status-select" data-room-id="<%= room.getRoomId() %>">
+                                    <option value="Available" <%= "Available".equals(status) ? "selected" : "" %>>空闲</option>
+                                    <option value="Occupied" <%= "Occupied".equals(status) ? "selected" : "" %>>已入住</option>
+                                    <option value="Reserved" <%= "Reserved".equals(status) ? "selected" : "" %>>已预订</option>
+                                    <option value="Cleaning" <%= "Cleaning".equals(status) ? "selected" : "" %>>清洁中</option>
+                                    <option value="Maintenance" <%= "Maintenance".equals(status) ? "selected" : "" %>>维修中</option>
+                                </select>
+                                <button class="update-btn" onclick="updateRoomStatus(this)">更新</button>
+                            </td>
+                        <% } %>
+                    </tr>
+                <%
+                    }
+                %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <div style="padding: 3rem; text-align: center; color: #6c879c;">
+                <i class="fas fa-inbox" style="font-size: 2rem;"></i>
+                <p>没有找到任何房间信息。</p>
             </div>
-        </div>
-        <%
-                }
-            }
-        %>
+        <% } %>
     </div>
 
-    <div class="footer-nav">
-        <a href="${pageContext.request.contextPath}/index" class="back-home">
-            <i class="fas fa-arrow-left"></i>
-            返回首页
-        </a>
+    <div style="text-align: center;">
+        <a href="index.jsp" class="back-link"><i class="fas fa-arrow-left"></i> 返回首页</a>
     </div>
 </div>
 
+<div id="toastMsg" class="toast-msg"></div>
+
+<%@ include file="footer.jsp" %>
+
+<script>
+    function showMessage(msg, isError) {
+        var toast = document.getElementById('toastMsg');
+        toast.textContent = msg;
+        toast.className = 'toast-msg' + (isError ? ' error' : '');
+        toast.style.display = 'block';
+        toast.style.animation = 'slideIn 0.3s ease';
+        setTimeout(function() {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
+    function updateRoomStatus(btn) {
+        var row = btn.closest('tr');
+        var select = row.querySelector('.status-select');
+        var roomId = select.getAttribute('data-room-id');
+        var newStatus = select.value;
+        var roomNumber = row.querySelector('td:first-child').innerText;
+
+        var statusText = {
+            'Available': '空闲',
+            'Occupied': '已入住',
+            'Reserved': '已预订',
+            'Cleaning': '清洁中',
+            'Maintenance': '维修中'
+        };
+
+        if (confirm('确定将房间 ' + roomNumber + ' 的状态改为 "' + statusText[newStatus] + '" 吗？')) {
+            fetch('${pageContext.request.contextPath}/updateRoomStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'roomId=' + encodeURIComponent(roomId) + '&status=' + encodeURIComponent(newStatus)
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                if (result.success) {
+                    showMessage('房间 ' + roomNumber + ' 状态已更新为 ' + statusText[newStatus], false);
+                    // 更新页面上的状态显示
+                    var statusCell = row.querySelector('td:nth-child(4) .status-badge');
+                    var iconClass = '';
+                    var badgeClass = '';
+                    if (newStatus === 'Available') {
+                        iconClass = 'fas fa-check-circle';
+                        badgeClass = 'status-available';
+                    } else if (newStatus === 'Occupied') {
+                        iconClass = 'fas fa-user';
+                        badgeClass = 'status-occupied';
+                    } else if (newStatus === 'Reserved') {
+                        iconClass = 'fas fa-calendar-check';
+                        badgeClass = 'status-reserved';
+                    } else if (newStatus === 'Cleaning') {
+                        iconClass = 'fas fa-broom';
+                        badgeClass = 'status-cleaning';
+                    } else {
+                        iconClass = 'fas fa-tools';
+                        badgeClass = 'status-maintenance';
+                    }
+                    statusCell.className = 'status-badge ' + badgeClass;
+                    statusCell.innerHTML = '<i class="' + iconClass + '"></i> ' + statusText[newStatus];
+                } else {
+                    showMessage(result.message || '更新失败', true);
+                }
+            })
+            .catch(function(err) {
+                console.error('Error:', err);
+                showMessage('网络错误，请稍后重试', true);
+            });
+        }
+    }
+</script>
 </body>
 </html>
