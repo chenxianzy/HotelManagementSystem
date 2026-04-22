@@ -50,55 +50,46 @@ public class LoginServlet extends HttpServlet {
         }
 
         try {
-            // 尝试从数据库验证登录
+            // 从数据库验证登录
             User user = userDAO.authenticate(username, password);
 
-            if (user != null) {
-                // 验证角色是否匹配
-                if (!user.getRole().equals(selectedRole)) {
-                    request.setAttribute("errorMsg", "该账号没有" + getRoleName(selectedRole) + "权限，请选择正确的角色");
-                    request.getRequestDispatcher("/login.jsp").forward(request, response);
-                    return;
-                }
-
-                // 登录成功
-                HttpSession session = request.getSession();
-                session.setAttribute("user", user);
-                session.setAttribute("role", user.getRole());
-                session.setAttribute("username", user.getUsername());
-                session.setAttribute("userId", user.getUserId());
-
-                response.sendRedirect(request.getContextPath() + "/index.jsp");
+            if (user == null) {
+                request.setAttribute("errorMsg", "用户名或密码错误");
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
                 return;
             }
+
+            // 验证角色是否匹配
+            if (!user.getRole().equals(selectedRole)) {
+                String roleName = getRoleName(selectedRole);
+                request.setAttribute("errorMsg", "该账号没有" + roleName + "权限，请选择正确的角色");
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
+                return;
+            }
+
+            // 检查账号状态
+            if (user.getStatus() != 1) {
+                request.setAttribute("errorMsg", "账号已被禁用，请联系管理员");
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
+                return;
+            }
+
+            // 登录成功
+            HttpSession session = request.getSession();
+            session.setAttribute("user", user);
+            session.setAttribute("role", user.getRole());
+            session.setAttribute("username", user.getUsername());
+            session.setAttribute("userId", user.getUserId());
+
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+
         } catch (Exception e) {
             e.printStackTrace();
-            // 数据库查询失败，记录日志但不影响演示模式
-            System.err.println("数据库验证失败，进入演示模式: " + e.getMessage());
+            request.setAttribute("errorMsg", "系统错误：" + e.getMessage());
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
         }
-
-        // ============================================================
-        // 演示模式：如果没有数据库或账号不存在，仍然允许登录
-        // 实际生产环境中，应该只允许数据库验证成功的用户登录
-        // ============================================================
-        User demoUser = new User();
-        demoUser.setUsername(username != null && !username.isEmpty() ? username : "游客");
-        demoUser.setRole(selectedRole != null ? selectedRole : "guest");
-        demoUser.setUserId(1);
-        demoUser.setStatus(1);
-
-        HttpSession session = request.getSession();
-        session.setAttribute("user", demoUser);
-        session.setAttribute("role", demoUser.getRole());
-        session.setAttribute("username", demoUser.getUsername());
-        session.setAttribute("userId", demoUser.getUserId());
-
-        response.sendRedirect(request.getContextPath() + "/index.jsp");
     }
 
-    /**
-     * 获取角色中文名称
-     */
     private String getRoleName(String role) {
         switch (role) {
             case "manager":

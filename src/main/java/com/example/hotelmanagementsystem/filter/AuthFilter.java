@@ -17,10 +17,17 @@ import java.util.List;
 @WebFilter("/*")
 public class AuthFilter implements Filter {
 
-    // 不需要登录就可以访问的页面
+    // 不需要登录就可以访问的页面（白名单）
     private static final List<String> PUBLIC_PATHS = List.of(
-            "/login.jsp", "/login", "/css/", "/js/", "/fonts/",
-            "/favicon.ico", "/error.jsp"
+            "/login.jsp",
+            "/login",
+            "/register.jsp",    // 添加注册页面
+            "/register",        // 添加注册Servlet
+            "/css/",
+            "/js/",
+            "/fonts/",
+            "/favicon.ico",
+            "/error.jsp"
     );
 
     @Override
@@ -35,7 +42,7 @@ public class AuthFilter implements Filter {
 
         String path = req.getRequestURI().substring(req.getContextPath().length());
 
-        // 检查是否是公共路径
+        // 检查是否是公共路径（不需要登录）
         boolean isPublic = PUBLIC_PATHS.stream().anyMatch(path::startsWith);
 
         if (isPublic) {

@@ -8,51 +8,35 @@
         <servlet-name>CheckIn</servlet-name>
         <servlet-class>com.example.hotelmanagementsystem.servlet.CheckInServlet</servlet-class>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>CheckIn</servlet-name>
         <url-pattern>/checkin</url-pattern>
     </servlet-mapping>
 
-
     <servlet>
         <servlet-name>CheckInForm</servlet-name>
         <servlet-class>com.example.hotelmanagementsystem.servlet.CheckInFormServlet</servlet-class>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>CheckInForm</servlet-name>
         <url-pattern>/checkinForm</url-pattern>
     </servlet-mapping>
 
-
-    <servlet>
-        <servlet-name>CheckOut</servlet-name>
-        <servlet-class>com.example.hotelmanagementsystem.servlet.CheckOutServlet</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>CheckOut</servlet-name>
-        <url-pattern>/checkout</url-pattern>
-    </servlet-mapping>
-
+    <!-- CheckOutServlet 使用注解 @WebServlet("/checkout")，不再在 web.xml 中配置 -->
 
     <servlet>
         <servlet-name>AllRoomStatus</servlet-name>
         <servlet-class>com.example.hotelmanagementsystem.servlet.AllRoomStatusServlet</servlet-class>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>AllRoomStatus</servlet-name>
         <url-pattern>/allRoomStatus</url-pattern>
     </servlet-mapping>
 
-
     <servlet>
         <servlet-name>RoomStatus</servlet-name>
         <servlet-class>com.example.hotelmanagementsystem.servlet.RoomStatusServlet</servlet-class>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>RoomStatus</servlet-name>
         <url-pattern>/rooms/status</url-pattern>

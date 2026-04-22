@@ -110,6 +110,76 @@ public class RoomDAO {
         return rooms;
     }
 
+    /**
+     * 获取顾客当前入住的房间列表（顾客自助退房用）
+     */
+    public List<Room> getRoomsOccupiedByGuest(int userId) throws SQLException {
+        List<Room> rooms = new ArrayList<>();
+
+        String sql = "SELECT DISTINCT r.RoomID, r.RoomNumber, r.Status, rt.TypeName, rt.Price " +
+                "FROM Rooms r " +
+                "INNER JOIN RoomTypes rt ON r.RoomTypeID = rt.RoomTypeID " +
+                "INNER JOIN Bookings b ON r.RoomID = b.RoomID " +
+                "INNER JOIN Guests g ON b.GuestID = g.GuestID " +
+                "WHERE g.UserID = ? AND b.BookingStatus = 'CheckedIn' " +
+                "ORDER BY r.RoomNumber";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Room room = new Room();
+                    room.setRoomId(rs.getInt("RoomID"));
+                    room.setRoomNumber(rs.getString("RoomNumber"));
+                    room.setStatus(rs.getString("Status"));
+                    room.setTypeName(rs.getString("TypeName"));
+                    room.setPrice(rs.getBigDecimal("Price"));
+                    rooms.add(room);
+                }
+            }
+        }
+        return rooms;
+    }
+
+    /**
+     * 验证顾客是否入住了指定房间（顾客退房权限验证用）
+     */
+    public boolean isGuestOccupyingRoom(int userId, int roomId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Bookings b " +
+                "INNER JOIN Guests g ON b.GuestID = g.GuestID " +
+                "WHERE g.UserID = ? AND b.RoomID = ? AND b.BookingStatus = 'CheckedIn'";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, roomId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 根据房间ID获取房间号
+     */
+    public String getRoomNumberById(int roomId) throws SQLException {
+        String sql = "SELECT RoomNumber FROM Rooms WHERE RoomID = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, roomId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("RoomNumber");
+                }
+            }
+        }
+        return null;
+    }
+
     // =================================================================================
     // 2. 更新与辅助方法 (Update & Utility Methods)
     // =================================================================================
@@ -133,8 +203,7 @@ public class RoomDAO {
     }
 
     /**
-     * 【新增方法】更新房间状态 (通过 RoomID) - 无需事务的简单更新
-     * 供 UpdateRoomStatusServlet 调用
+     * 更新房间状态 (通过 RoomID) - 无需事务的简单更新
      */
     public boolean updateRoomStatus(int roomID, String newStatus) throws SQLException {
         String sql = "UPDATE Rooms SET Status = ? WHERE RoomID = ?";

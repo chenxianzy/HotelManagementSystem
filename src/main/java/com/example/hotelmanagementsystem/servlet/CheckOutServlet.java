@@ -2,68 +2,116 @@ package com.example.hotelmanagementsystem.servlet;
 
 import com.example.hotelmanagementsystem.dao.BookingDAO;
 import com.example.hotelmanagementsystem.dao.RoomDAO;
-import com.example.hotelmanagementsystem.model.Room;
+import com.example.hotelmanagementsystem.model.User;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.List;
 
+@WebServlet("/checkout")
 public class CheckOutServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
 
-    private final BookingDAO bookingDAO = new BookingDAO();
-    private final RoomDAO roomDAO = new RoomDAO();
+    private RoomDAO roomDAO = new RoomDAO();
+    private BookingDAO bookingDAO = new BookingDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        try {
-            // 1. 获取所有 "已入住" 的房间，供下拉菜单使用
-            List<Room> occupiedRooms = roomDAO.getOccupiedRooms();
-            request.setAttribute("occupiedRooms", occupiedRooms);
 
-            // 2. 转发到退房页面
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        String role = (String) session.getAttribute("role");
+
+        try {
+            List<com.example.hotelmanagementsystem.model.Room> occupiedRooms;
+
+            // 根据角色获取不同的房间列表
+            if ("guest".equals(role)) {
+                // 顾客只能看到自己入住的房间
+                Integer userId = (Integer) session.getAttribute("userId");
+                if (userId == null) {
+                    request.setAttribute("error", "请先登录");
+                    request.getRequestDispatcher("/login.jsp").forward(request, response);
+                    return;
+                }
+                occupiedRooms = roomDAO.getRoomsOccupiedByGuest(userId);
+
+                if (occupiedRooms == null || occupiedRooms.isEmpty()) {
+                    request.setAttribute("error", "您当前没有入住的房间，无法办理退房");
+                }
+            } else {
+                // 前台/经理可以看到所有入住的房间
+                occupiedRooms = roomDAO.getCheckedInRooms();
+            }
+
+            request.setAttribute("occupiedRooms", occupiedRooms);
             request.getRequestDispatcher("/checkout_form.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "无法加载已入住房间列表");
+            request.setAttribute("error", "系统错误：" + e.getMessage());
+            request.getRequestDispatcher("/checkout_form.jsp").forward(request, response);
         }
     }
 
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.setCharacterEncoding("UTF-8");
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        String role = (String) session.getAttribute("role");
 
-        // 获取前端提交的 RoomID (下拉菜单的 value)
-        String roomIDStr = request.getParameter("roomID");
+        String roomIdStr = request.getParameter("roomID");
 
-        if (roomIDStr == null || roomIDStr.trim().isEmpty()) {
-            request.setAttribute("error", "请选择要退房的房间。");
-            doGet(request, response); // 重新加载表单
+        if (roomIdStr == null || roomIdStr.isEmpty()) {
+            request.setAttribute("error", "请选择要退房的房间");
+            doGet(request, response);
             return;
         }
 
         try {
-            int roomID = Integer.parseInt(roomIDStr);
+            int roomId = Integer.parseInt(roomIdStr);
 
-            // 执行退房事务
-            BigDecimal cost = bookingDAO.performCheckOutTransaction(roomID);
+            // 验证权限：顾客只能退自己入住的房间
+            if ("guest".equals(role)) {
+                Integer userId = (Integer) session.getAttribute("userId");
+                if (userId == null) {
+                    request.setAttribute("error", "请先登录");
+                    request.getRequestDispatcher("/login.jsp").forward(request, response);
+                    return;
+                }
+                boolean isGuestInRoom = roomDAO.isGuestOccupyingRoom(userId, roomId);
+                if (!isGuestInRoom) {
+                    request.setAttribute("error", "您没有权限退订这个房间");
+                    doGet(request, response);
+                    return;
+                }
+            }
 
-            // 成功：显示账单
-            request.setAttribute("message", "退房成功！共计费用：¥" + cost);
-            request.getRequestDispatcher("/checkout_result.jsp").forward(request, response); // 假设您有这个结果页，或者回到 index
+            // 执行退房
+            BigDecimal totalCost = bookingDAO.performCheckOutTransaction(roomId);
 
+            // 获取房间号
+            String roomNumber = roomDAO.getRoomNumberById(roomId);
+
+            request.setAttribute("success", true);
+            request.setAttribute("roomNumber", roomNumber);
+            request.setAttribute("totalCost", totalCost);
+            request.getRequestDispatcher("/checkout_result.jsp").forward(request, response);
+
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "房间ID格式错误");
+            doGet(request, response);
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "退房失败：" + e.getMessage());
-            doGet(request, response); // 重新加载表单
+            request.setAttribute("error", e.getMessage());
+            doGet(request, response);
         }
     }
 }
