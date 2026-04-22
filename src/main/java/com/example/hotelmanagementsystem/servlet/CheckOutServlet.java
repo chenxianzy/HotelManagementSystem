@@ -100,10 +100,11 @@ public class CheckOutServlet extends HttpServlet {
             // 获取房间号
             String roomNumber = roomDAO.getRoomNumberById(roomId);
 
-            request.setAttribute("success", true);
-            request.setAttribute("roomNumber", roomNumber);
-            request.setAttribute("totalCost", totalCost);
-            request.getRequestDispatcher("/checkout_result.jsp").forward(request, response);
+            // 【修改】退房成功后跳转到首页，这样统计数据会重新加载
+            // 可以将退房结果信息放入 session，在首页显示提示
+            session.setAttribute("checkoutMessage", "房间 " + roomNumber + " 退房成功！总费用：¥" + totalCost);
+
+            response.sendRedirect(request.getContextPath() + "/index");
 
         } catch (NumberFormatException e) {
             request.setAttribute("error", "房间ID格式错误");

@@ -1,18 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.example.hotelmanagementsystem.model.User" %>
 <%
-    // 获取用户信息，避免重复定义变量
-    User currentUser = null;
-    String role = "guest";
-    String username = "游客";
-
-    if (session != null) {
-        currentUser = (User) session.getAttribute("user");
-        if (currentUser != null) {
-            role = currentUser.getRole();
-            username = currentUser.getUsername();
-        }
-    }
+    // 使用不同的变量名，避免与其他 JSP 冲突
+    User headerUser = (User) session.getAttribute("user");
+    String headerRole = (headerUser != null) ? headerUser.getRole() : "guest";
+    String headerUsername = (headerUser != null) ? headerUser.getUsername() : "游客";
 %>
 <!DOCTYPE html>
 <html>
@@ -86,11 +78,11 @@
     </div>
     <div class="user-info">
         <i class="fas fa-user-circle"></i>
-        <span><%= username %></span>
+        <span><%= headerUsername %></span>
         <span class="role-badge">
-            <% if ("manager".equals(role)) { %>
+            <% if ("manager".equals(headerRole)) { %>
                 前台经理
-            <% } else if ("staff".equals(role)) { %>
+            <% } else if ("staff".equals(headerRole)) { %>
                 前台
             <% } else { %>
                 顾客

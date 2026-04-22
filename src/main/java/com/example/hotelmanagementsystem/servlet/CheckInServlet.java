@@ -65,8 +65,8 @@ public class CheckInServlet extends HttpServlet {
             boolean success = bookingDAO.performCheckInTransaction(roomID, newGuest, checkInDate);
 
             if (success) {
-                request.setAttribute("message", "房间 " + roomIdentifierStr + " 入住成功！");
-                request.getRequestDispatcher("/checkin_result.jsp").forward(request, response);
+                // 【修改】入住成功后跳转到首页，这样统计数据会重新加载
+                response.sendRedirect(request.getContextPath() + "/index");
             } else {
                 // 如果是业务逻辑失败（如房间已被占用），也直接打印出来查看原因
                 PrintWriter out = response.getWriter();

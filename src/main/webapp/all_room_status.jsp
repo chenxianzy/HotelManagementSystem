@@ -322,7 +322,7 @@
     </div>
 
     <div class="footer-action">
-        <a href="index.jsp" class="back-link">
+        <a href="${pageContext.request.contextPath}/index" class="back-link">
             <i class="fas fa-arrow-left"></i> 返回首页
         </a>
     </div>

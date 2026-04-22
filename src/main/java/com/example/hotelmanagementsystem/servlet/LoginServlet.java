@@ -21,7 +21,7 @@ public class LoginServlet extends HttpServlet {
         // 如果已经登录，跳转到首页
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            response.sendRedirect(request.getContextPath() + "/index");
             return;
         }
         // 显示登录页面
@@ -81,7 +81,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("username", user.getUsername());
             session.setAttribute("userId", user.getUserId());
 
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            response.sendRedirect(request.getContextPath() + "/index");
 
         } catch (Exception e) {
             e.printStackTrace();

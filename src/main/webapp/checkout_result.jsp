@@ -410,7 +410,7 @@
         </div>
 
         <div class="footer-links">
-            <a href="index.jsp" class="action-link">
+            <a href="${pageContext.request.contextPath}/index" class="action-link">
                 <i class="fas fa-home"></i> 返回首页
             </a>
             <a href="allRoomStatus" class="action-link">

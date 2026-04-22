@@ -406,8 +406,8 @@
             </form>
         </div>
 
-        <div class="footer-links">
-            <a href="index.jsp" class="back-link">
+        <div style="text-align: center;">
+            <a href="${pageContext.request.contextPath}/index" class="back-link">
                 <i class="fas fa-arrow-left"></i> 返回首页
             </a>
         </div>

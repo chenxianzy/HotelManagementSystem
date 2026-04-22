@@ -111,6 +111,36 @@ public class RoomDAO {
     }
 
     /**
+     * 获取客房总数
+     */
+    public int getTotalRooms() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Rooms";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * 获取空闲房间数 (Status = 'Available')
+     */
+    public int getAvailableRoomsCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Rooms WHERE Status = 'Available'";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    /**
      * 获取顾客当前入住的房间列表（顾客自助退房用）
      */
     public List<Room> getRoomsOccupiedByGuest(int userId) throws SQLException {

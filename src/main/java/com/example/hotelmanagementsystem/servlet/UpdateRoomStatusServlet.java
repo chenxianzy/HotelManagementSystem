@@ -23,7 +23,6 @@ public class UpdateRoomStatusServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         try {
-            // 获取参数
             String roomIdStr = request.getParameter("roomId");
             String status = request.getParameter("status");
 
@@ -33,21 +32,16 @@ public class UpdateRoomStatusServlet extends HttpServlet {
             }
 
             int roomId = Integer.parseInt(roomIdStr);
-
-            // 更新房间状态
             boolean success = roomDAO.updateRoomStatus(roomId, status);
 
             if (success) {
                 out.print("{\"success\": true, \"message\": \"房间状态已更新\"}");
             } else {
-                out.print("{\"success\": false, \"message\": \"更新失败，请重试\"}");
+                out.print("{\"success\": false, \"message\": \"更新失败\"}");
             }
-
-        } catch (NumberFormatException e) {
-            out.print("{\"success\": false, \"message\": \"房间ID格式错误\"}");
         } catch (Exception e) {
             e.printStackTrace();
-            out.print("{\"success\": false, \"message\": \"系统错误: " + e.getMessage() + "\"}");
+            out.print("{\"success\": false, \"message\": \"系统错误：" + e.getMessage() + "\"}");
         }
     }
 }

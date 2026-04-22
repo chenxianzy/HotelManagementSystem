@@ -373,10 +373,6 @@
                 </button>
             </form>
 
-            <div class="demo-note">
-                <p><i class="fas fa-info-circle"></i> 演示账号：任意用户名 + 任意密码，选择角色即可登录</p>
-            </div>
-
             <div class="register-link">
                 还没有账号？ <a href="/HotelManagementSystem/register">立即注册</a>
             </div>

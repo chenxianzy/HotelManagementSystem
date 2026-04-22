@@ -345,6 +345,18 @@
     }
     // 判断是否是前台或经理
     boolean isStaffOrManager = "staff".equals(userRole) || "manager".equals(userRole);
+
+    // 从 request 获取统计数据（由 IndexServlet 设置）
+    Integer totalRooms = (Integer) request.getAttribute("totalRooms");
+    Integer availableRooms = (Integer) request.getAttribute("availableRooms");
+    Integer todayCheckIns = (Integer) request.getAttribute("todayCheckIns");
+    Integer todayCheckOuts = (Integer) request.getAttribute("todayCheckOuts");
+
+    // 如果统计数为 null，设置默认值
+    if (totalRooms == null) totalRooms = 0;
+    if (availableRooms == null) availableRooms = 0;
+    if (todayCheckIns == null) todayCheckIns = 0;
+    if (todayCheckOuts == null) todayCheckOuts = 0;
 %>
 
 <div class="dashboard-wrapper">
@@ -360,28 +372,28 @@
             </div>
         </div>
 
-        <!-- 统计卡片 - 根据角色显示不同内容 -->
+        <!-- 统计卡片 - 根据角色显示不同内容，数据从数据库动态获取 -->
         <% if (isStaffOrManager) { %>
             <!-- 员工/经理视图：显示4个卡片 -->
             <div class="stats-row staff-view">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-building"></i></div>
-                    <div class="stat-number">16</div>
+                    <div class="stat-number"><%= totalRooms %></div>
                     <div class="stat-label">客房总数</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-door-open"></i></div>
-                    <div class="stat-number">10</div>
+                    <div class="stat-number"><%= availableRooms %></div>
                     <div class="stat-label">空闲房间</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-user-check"></i></div>
-                    <div class="stat-number">3</div>
+                    <div class="stat-number"><%= todayCheckIns %></div>
                     <div class="stat-label">今日入住</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-user-clock"></i></div>
-                    <div class="stat-number">2</div>
+                    <div class="stat-number"><%= todayCheckOuts %></div>
                     <div class="stat-label">今日退房</div>
                 </div>
             </div>
@@ -390,12 +402,12 @@
             <div class="stats-row customer-view">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-building"></i></div>
-                    <div class="stat-number">16</div>
+                    <div class="stat-number"><%= totalRooms %></div>
                     <div class="stat-label">客房总数</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-door-open"></i></div>
-                    <div class="stat-number">10</div>
+                    <div class="stat-number"><%= availableRooms %></div>
                     <div class="stat-label">空闲房间</div>
                 </div>
             </div>

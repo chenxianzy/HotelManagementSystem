@@ -259,7 +259,7 @@
     </div>
 
     <div class="footer-link">
-        <a href="${pageContext.request.contextPath}/index.jsp" class="back-home">
+        <a href="${pageContext.request.contextPath}/index" class="back-home">
             <i class="fas fa-arrow-left"></i>
             返回首页
         </a>

@@ -22,7 +22,7 @@
         <url-pattern>/checkinForm</url-pattern>
     </servlet-mapping>
 
-    <!-- CheckOutServlet 使用注解 @WebServlet("/checkout")，不再在 web.xml 中配置 -->
+    <!-- CheckOutServlet 使用注解 @WebServlet("/checkout") -->
 
     <servlet>
         <servlet-name>AllRoomStatus</servlet-name>
@@ -41,5 +41,7 @@
         <servlet-name>RoomStatus</servlet-name>
         <url-pattern>/rooms/status</url-pattern>
     </servlet-mapping>
+
+    <!-- IndexServlet 使用注解 @WebServlet("/index")，不在 web.xml 中配置 -->
 
 </web-app>
