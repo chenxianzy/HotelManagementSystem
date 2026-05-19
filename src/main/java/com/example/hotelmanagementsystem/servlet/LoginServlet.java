@@ -59,17 +59,17 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
-            // 验证角色是否匹配
-            if (!user.getRole().equals(selectedRole)) {
-                String roleName = getRoleName(selectedRole);
-                request.setAttribute("errorMsg", "该账号没有" + roleName + "权限，请选择正确的角色");
+            // 检查账号状态（先检查状态，再检查角色）
+            if (user.getStatus() != 1) {
+                request.setAttribute("errorMsg", "账号已被禁用，请联系管理员");
                 request.getRequestDispatcher("/login.jsp").forward(request, response);
                 return;
             }
 
-            // 检查账号状态
-            if (user.getStatus() != 1) {
-                request.setAttribute("errorMsg", "账号已被禁用，请联系管理员");
+            // 验证角色是否匹配
+            if (!user.getRole().equals(selectedRole)) {
+                String roleName = getRoleName(selectedRole);
+                request.setAttribute("errorMsg", "该账号没有" + roleName + "权限，请选择正确的角色");
                 request.getRequestDispatcher("/login.jsp").forward(request, response);
                 return;
             }

@@ -53,12 +53,24 @@ public class BookingDAO {
 
         } catch (SQLException e) {
             System.err.println("Check-In Transaction failed, rolling back.");
-            if (conn != null) conn.rollback();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    System.err.println("Rollback failed: " + ex.getMessage());
+                }
+            }
             throw e;
         } finally {
             if (conn != null) {
-                conn.setAutoCommit(true);
-                conn.close();
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException ignored) {
+                }
+                try {
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
             }
         }
     }
@@ -227,12 +239,24 @@ public class BookingDAO {
             return totalCost;
 
         } catch (SQLException e) {
-            if (conn != null) conn.rollback();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    System.err.println("Rollback failed: " + ex.getMessage());
+                }
+            }
             throw e;
         } finally {
             if (conn != null) {
-                conn.setAutoCommit(true);
-                conn.close();
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException ignored) {
+                }
+                try {
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
             }
         }
     }

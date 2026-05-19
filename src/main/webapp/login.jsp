@@ -374,7 +374,7 @@
             </form>
 
             <div class="register-link">
-                还没有账号？ <a href="/HotelManagementSystem/register">立即注册</a>
+                还没有账号？ <a href="${pageContext.request.contextPath}/register">立即注册</a>
             </div>
         </div>
     </div>

@@ -189,7 +189,7 @@
                 <button type="submit" class="register-btn"><i class="fas fa-user-plus"></i> 立即注册</button>
             </form>
             <div class="login-link">
-                已有账号？ <a href="login">立即登录</a>
+                已有账号？ <a href="${pageContext.request.contextPath}/login">立即登录</a>
             </div>
         </div>
     </div>

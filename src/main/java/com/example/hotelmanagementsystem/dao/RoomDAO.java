@@ -17,7 +17,6 @@ public class RoomDAO {
 
     public List<Room> getCheckedInRooms() throws SQLException {
         List<Room> checkedInRooms = new ArrayList<>();
-        Connection conn = null;
 
         System.out.println("--- DEBUG: getCheckedInRooms START ---");
 
@@ -26,29 +25,23 @@ public class RoomDAO {
                 "WHERE TRIM(R.Status) = 'Occupied' " +
                 "ORDER BY R.RoomNumber";
 
-        try {
-            conn = DatabaseConnection.getConnection();
-            try (PreparedStatement pstmt = conn.prepareStatement(sql);
-                 ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
-                while (rs.next()) {
-                    Room room = new Room();
-                    room.setRoomId(rs.getInt("RoomID"));
-                    room.setRoomNumber(rs.getString("RoomNumber"));
-                    room.setStatus(rs.getString("Status"));
-                    room.setTypeName(rs.getString("TypeName"));
-                    room.setPrice(rs.getBigDecimal("Price"));
-                    checkedInRooms.add(room);
-                    System.out.println("--- DEBUG: Found Occupied Room: " + room.getRoomNumber());
-                }
+            while (rs.next()) {
+                Room room = new Room();
+                room.setRoomId(rs.getInt("RoomID"));
+                room.setRoomNumber(rs.getString("RoomNumber"));
+                room.setStatus(rs.getString("Status"));
+                room.setTypeName(rs.getString("TypeName"));
+                room.setPrice(rs.getBigDecimal("Price"));
+                checkedInRooms.add(room);
+                System.out.println("--- DEBUG: Found Occupied Room: " + room.getRoomNumber());
             }
         } catch (SQLException e) {
             System.err.println("Error in getCheckedInRooms: " + e.getMessage());
             throw e;
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
         }
 
         System.out.println("--- DEBUG: Total Occupied Rooms Found: " + checkedInRooms.size());
@@ -57,26 +50,21 @@ public class RoomDAO {
 
     public List<Room> getAllRoomStatus() throws SQLException {
         List<Room> rooms = new ArrayList<>();
-        Connection conn = null;
 
         String sql = "SELECT R.RoomID, R.RoomNumber, R.Status, RT.TypeName, RT.Price " +
                 "FROM Rooms R INNER JOIN RoomTypes RT ON R.RoomTypeID = RT.RoomTypeID " +
                 "ORDER BY R.RoomNumber";
 
-        try {
-            conn = DatabaseConnection.getConnection();
-            try (PreparedStatement pstmt = conn.prepareStatement(sql);
-                 ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
-                while (rs.next()) {
-                    rooms.add(mapResultSetToRoom(rs));
-                }
+            while (rs.next()) {
+                rooms.add(mapResultSetToRoom(rs));
             }
         } catch (SQLException e) {
             System.err.println("Error in getAllRoomStatus: " + e.getMessage());
             throw e;
-        } finally {
-            if (conn != null) conn.close();
         }
         return rooms;
     }

@@ -420,7 +420,6 @@
                 <div class="card-header">
                     <div class="card-icon"><i class="fas fa-key"></i></div>
                     <h3>办理入住</h3>
-                    <p>为客人办理入住手续，并登记订单记录</p>
                 </div>
                 <div class="card-footer">
                     <div class="menu-link">前往办理入住 <i class="fas fa-arrow-right"></i></div>
@@ -432,7 +431,6 @@
                 <div class="card-header">
                     <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
                     <h3>房间状态查询</h3>
-                    <p>查看酒店内所有房间的详细状态</p>
                 </div>
                 <div class="card-footer">
                     <div class="menu-link">查看状态 <i class="fas fa-arrow-right"></i></div>
@@ -444,7 +442,6 @@
                 <div class="card-header">
                     <div class="card-icon"><i class="fas fa-check-circle"></i></div>
                     <h3>空闲房间查询</h3>
-                    <p>快速查询当前所有可供入住的空闲房间</p>
                 </div>
                 <div class="card-footer">
                     <div class="menu-link">查询空闲 <i class="fas fa-arrow-right"></i></div>
@@ -456,7 +453,6 @@
                 <div class="card-header">
                     <div class="card-icon"><i class="fas fa-sign-out-alt"></i></div>
                     <h3>办理退房</h3>
-                    <p>为客人结算费用并办理退房手续</p>
                 </div>
                 <div class="card-footer">
                     <div class="menu-link">办理退房 <i class="fas fa-arrow-right"></i></div>

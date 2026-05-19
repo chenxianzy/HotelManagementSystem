@@ -101,7 +101,7 @@ public class UserDAO {
      * 验证用户登录
      */
     public User authenticate(String username, String password) throws SQLException {
-        String sql = "SELECT UserID, Username, Password, Role, Status FROM Users WHERE Username = ? AND Status = 1";
+        String sql = "SELECT UserID, Username, Password, Role, Status FROM Users WHERE Username = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
